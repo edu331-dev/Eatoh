@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Creamy Maize Background */
+    --background: 43 50% 97%; 
+    /* Dark Earth Text */
+    --foreground: 24 20% 15%; 
+
+    /* White Card Background */
+    --card: 0 0% 100%;
+    --card-foreground: 24 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 20% 15%;
+
+    /* Ochre/Clay Red */
+    --primary: 18 90% 40%; 
+    --primary-foreground: 0 0% 100%;
+
+    /* Savanna Green */
+    --secondary: 82 39% 30%; 
+    --secondary-foreground: 0 0% 100%;
+
+    /* Light Earth Muted */
+    --muted: 36 30% 85%; 
+    --muted-foreground: 24 15% 42%;
+
+    /* Kenyan Flag Yellow / Maize */
+    --accent: 43 90% 50%; 
+    --accent-foreground: 24 20% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 36 20% 80%;
+    --input: 36 20% 80%;
+    --ring: 18 90% 40%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
