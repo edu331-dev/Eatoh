@@ -1,48 +1,44 @@
-import { useState, useCallback } from "react";
-import { searchMeals, getMealsByCategory } from "../lib/api";
+import { useState, useCallback, useEffect } from "react";
 import type { MealSummary } from "../types/meal";
 
-export type SearchStatus = "idle" | "loading" | "success" | "error";
+const STORAGE_KEY = "eatoh_favorites";
 
-export function useSearch() {
-  const [results, setResults]               = useState<MealSummary[]>([]);
-  const [status, setStatus]                 = useState<SearchStatus>("idle");
-  const [error, setError]                   = useState<string | null>(null);
-  const [activeQuery, setActiveQuery]       = useState<string>("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+export function useFavorites() {
+  const [favorites, setFavorites] = useState<MealSummary[]>([]);
 
-  const search = useCallback(async (query: string) => {
-    const q = query.trim();
-    if (!q) return;
-    setStatus("loading"); setError(null); setActiveCategory(null); setActiveQuery(q);
+  // Load from localStorage on mount
+  useEffect(() => {
     try {
-      const meals = await searchMeals(q);
-      setResults(meals);
-      if (meals.length === 0) { setError(`No recipes found for "${q}". Try another dish name!`); setStatus("error"); }
-      else setStatus("success");
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setFavorites(JSON.parse(saved));
     } catch {
-      setError("Something went wrong. Please check your connection and try again.");
-      setStatus("error");
+      console.error("Failed to load favorites");
     }
   }, []);
 
-  const browseCategory = useCallback(async (category: string) => {
-    setStatus("loading"); setError(null); setActiveQuery(""); setActiveCategory(category);
+  // Save to localStorage when favorites change
+  useEffect(() => {
     try {
-      const meals = await getMealsByCategory(category);
-      setResults(meals);
-      setStatus(meals.length > 0 ? "success" : "error");
-      if (meals.length === 0) setError(`No recipes found in "${category}".`);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
     } catch {
-      setError("Failed to load category. Please try again.");
-      setStatus("error");
+      console.error("Failed to save favorites");
     }
+  }, [favorites]);
+
+  const toggle = useCallback((meal: MealSummary) => {
+    setFavorites((prev) => {
+      const exists = prev.find((m) => m.idMeal === meal.idMeal);
+      if (exists) {
+        return prev.filter((m) => m.idMeal !== meal.idMeal);
+      }
+      return [...prev, meal];
+    });
   }, []);
 
-  const reset = useCallback(() => {
-    setResults([]); setStatus("idle"); setError(null);
-    setActiveQuery(""); setActiveCategory(null);
-  }, []);
+  const isFavorite = useCallback(
+    (id: string) => favorites.some((m) => m.idMeal === id),
+    [favorites]
+  );
 
-  return { results, status, error, activeQuery, activeCategory, search, browseCategory, reset };
+  return { favorites, toggle, isFavorite };
 }
