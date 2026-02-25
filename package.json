@@ -1,3 +1,4 @@
+cat > package.json << 'EOF'
 {
   "name": "eatoh",
   "version": "1.0.0",
@@ -35,3 +36,4 @@
     "vite":                                    "^7.3.0"
   }
 }
+EOF
