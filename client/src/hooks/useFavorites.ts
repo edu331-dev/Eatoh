@@ -3,29 +3,19 @@ import type { MealSummary } from "../types/meal";
 
 const STORAGE_KEY = "eatoh_favorites";
 
-export function useSearch() {
-  const [results, setResults]               = useState<MealSummary[]>([]);
-  const [status, setStatus]                 = useState<SearchStatus>("idle");
-  const [error, setError]                   = useState<string | null>(null);
-  const [activeQuery, setActiveQuery]       = useState<string>("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+export function useFavorites() {
+  const [favorites, setFavorites] = useState<MealSummary[]>([]);
 
-  const search = useCallback(async (query: string) => {
-    const q = query.trim();
-    if (!q) return;
-    setStatus("loading"); setError(null); setActiveCategory(null); setActiveQuery(q);
+  useEffect(() => {
     try {
-      const meals = await searchMeals(q);
-      setResults(meals);
-      if (meals.length === 0) { setError(`No recipes found for "${q}". Try another dish name!`); setStatus("error"); }
-      else setStatus("success");
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setFavorites(JSON.parse(saved));
     } catch {
       console.error("Failed to load favorites");
     }
   }, []);
 
-  const browseCategory = useCallback(async (category: string) => {
-    setStatus("loading"); setError(null); setActiveQuery(""); setActiveCategory(category);
+  useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
     } catch {
