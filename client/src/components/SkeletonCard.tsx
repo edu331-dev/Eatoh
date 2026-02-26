@@ -1,10 +1,10 @@
 export default function SkeletonCard() {
   return (
-    <div style={{ background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }} aria-hidden="true">
-      <div className="skeleton" style={{ height: 200 }} />
-      <div style={{ padding: 16 }}>
-        <div className="skeleton" style={{ height: 17, width: "72%", marginBottom: 10 }} />
-        <div className="skeleton" style={{ height: 13, width: "45%" }} />
+    <div className="recipe-card" aria-hidden="true">
+      <div className="skeleton h-48" />
+      <div className="p-4 space-y-3">
+        <div className="skeleton h-5 w-3/4" />
+        <div className="skeleton h-4 w-1/2" />
       </div>
     </div>
   );

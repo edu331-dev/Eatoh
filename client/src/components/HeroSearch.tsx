@@ -11,19 +11,22 @@ interface Props {
 
 export default function HeroSearch({ categories, activeCategory, loading, onSearch, onCategory }: Props) {
   return (
-    <section style={{ background: "var(--ink)", padding: "60px 24px 52px", textAlign: "center" }}>
-      <p className="font-display" style={{ fontSize: 12, letterSpacing: "0.18em", color: "var(--amber)", textTransform: "uppercase", marginBottom: 14, opacity: 0.85 }}>
+    <section className="bg-ink py-16 px-6 text-center">
+      <p className="text-amber text-sm font-medium tracking-widest uppercase mb-4 opacity-85">
         Discover · Cook · Enjoy
       </p>
-      <h1 className="font-display" style={{ fontSize: "clamp(34px, 6vw, 62px)", fontWeight: 900, color: "var(--cream)", lineHeight: 1.1, marginBottom: 14 }}>
+      <h1 className="font-display text-4xl md:text-6xl font-bold text-cream mb-2 leading-tight">
         What's on the<br />
-        <em style={{ color: "var(--amber-light)", fontStyle: "italic" }}>menu tonight?</em>
+        <em className="text-amber-light italic">menu tonight?</em>
       </h1>
-      <p style={{ color: "rgba(250,246,240,0.55)", fontSize: 16, marginBottom: 34 }}>
+      <p className="text-cream/60 text-lg mb-8 max-w-xl mx-auto">
         Search thousands of recipes from around the world
       </p>
-      <SearchBar onSearch={onSearch} loading={loading} />
-      <CategoryChips categories={categories} active={activeCategory} onSelect={onCategory} />
+      
+      <div className="max-w-2xl mx-auto space-y-6">
+        <SearchBar onSearch={onSearch} loading={loading} />
+        <CategoryChips categories={categories} active={activeCategory} onSelect={onCategory} />
+      </div>
     </section>
   );
 }

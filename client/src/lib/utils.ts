@@ -4,7 +4,7 @@ export function getIngredients(meal: Meal): IngredientEntry[] {
   const list: IngredientEntry[] = [];
   for (let i = 1; i <= 20; i++) {
     const ingredient = (meal[`strIngredient${i}` as keyof Meal] as string | null)?.trim();
-    const measure    = (meal[`strMeasure${i}`    as keyof Meal] as string | null)?.trim();
+    const measure = (meal[`strMeasure${i}` as keyof Meal] as string | null)?.trim();
     if (ingredient) list.push({ ingredient, measure: measure ?? "" });
   }
   return list;

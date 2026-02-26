@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react";
-import { getMealById } from "../lib/api";
+import { X, Heart, ExternalLink, Plus, ChefHat } from 'lucide-react';
+import { getMealById } from "../api/api";
 import { getIngredients, parseSteps, getYouTubeId } from "../lib/utils";
 import type { Meal, MealSummary } from "../types/meal";
 
-interface Props { mealId: string; isFavorite: boolean; onToggleFavorite: (meal: MealSummary) => void; onClose: () => void; }
+interface Props { 
+  mealId: string; 
+  isFavorite: boolean; 
+  onToggleFavorite: (meal: MealSummary) => void; 
+  onClose: () => void;
+  onAddToShoppingList?: (ingredients: { ingredient: string; measure: string }[], recipeName: string) => void;
+}
 
-export default function RecipeDetails({ mealId, isFavorite, onToggleFavorite, onClose }: Props) {
-  const [meal, setMeal]       = useState<Meal | null>(null);
+export default function RecipeDetails({ 
+  mealId, 
+  isFavorite, 
+  onToggleFavorite, 
+  onClose,
+  onAddToShoppingList 
+}: Props) {
+  const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -16,10 +29,14 @@ export default function RecipeDetails({ mealId, isFavorite, onToggleFavorite, on
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  useEffect(() => { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = ""; }; }, []);
+  useEffect(() => { 
+    document.body.style.overflow = "hidden"; 
+    return () => { document.body.style.overflow = ""; }; 
+  }, []);
 
   useEffect(() => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     getMealById(mealId)
       .then((m) => { if (!m) throw new Error("Not found"); setMeal(m); })
       .catch(() => setError("Failed to load the recipe. Please try again."))
@@ -27,109 +44,144 @@ export default function RecipeDetails({ mealId, isFavorite, onToggleFavorite, on
   }, [mealId]);
 
   const ingredients = meal ? getIngredients(meal) : [];
-  const steps       = meal ? parseSteps(meal.strInstructions) : [];
-  const ytId        = meal ? getYouTubeId(meal.strYoutube) : null;
+  const steps = meal ? parseSteps(meal.strInstructions) : [];
+  const ytId = meal ? getYouTubeId(meal.strYoutube) : null;
+
+  if (loading) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal p-16 text-center">
+          <div className="spinner mx-auto mb-4" />
+          <p className="text-muted">Loading recipe...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !meal) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal p-16 text-center">
+          <p className="text-terracotta text-lg mb-4">{error || "Recipe not found"}</p>
+          <button onClick={onClose} className="btn-primary">Close</button>
+        </div>
+      </div>
+    );
+  }
+
+  const summary: MealSummary = {
+    idMeal: meal.idMeal,
+    strMeal: meal.strMeal,
+    strMealThumb: meal.strMealThumb,
+    strCategory: meal.strCategory,
+    strArea: meal.strArea
+  };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true"
-      onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
-        <button onClick={onClose} aria-label="Close"
-          style={{ position: "absolute", top: 14, right: 14, zIndex: 10, background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: 38, height: 38, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          ×
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal max-h-[90vh] overflow-y-auto">
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 z-10 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full hover:bg-white transition-colors"
+        >
+          <X size={20} />
         </button>
 
-        {loading && (
-          <div style={{ padding: 64, textAlign: "center" }}>
-            <div className="spinner" style={{ margin: "0 auto 18px" }} />
-            <p style={{ color: "var(--muted)", fontSize: 14 }}>Loading recipe…</p>
-          </div>
-        )}
-
-        {!loading && error && (
-          <div style={{ padding: 64, textAlign: "center" }}>
-            <span style={{ fontSize: 48 }}>⚠️</span>
-            <p style={{ marginTop: 16, color: "var(--terracotta)", fontWeight: 500 }}>{error}</p>
-          </div>
-        )}
-
-        {!loading && meal && (
-          <>
-            <div style={{ position: "relative" }}>
-              <img src={meal.strMealThumb} alt={meal.strMeal}
-                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(26,18,8,0.72) 0%, transparent 55%)" }} />
-              <div style={{ position: "absolute", bottom: 20, left: 24, right: 64 }}>
-                <h2 className="font-display" style={{ fontSize: "clamp(22px, 4vw, 30px)", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 10 }}>{meal.strMeal}</h2>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="relative">
+          <img 
+            src={meal.strMealThumb} 
+            alt={meal.strMeal}
+            className="w-full h-64 md:h-80 object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">{meal.strMeal}</h2>
+                <div className="flex flex-wrap gap-2">
                   {meal.strCategory && <span className="tag tag-amber">{meal.strCategory}</span>}
-                  {meal.strArea     && <span className="tag tag-sage">🌍 {meal.strArea}</span>}
-                  {meal.strTags && meal.strTags.split(",").slice(0, 2).map((t) => <span key={t} className="tag tag-terracotta">{t.trim()}</span>)}
+                  {meal.strArea && <span className="tag tag-sage">🌍 {meal.strArea}</span>}
                 </div>
               </div>
-              <button className={`fav-btn${isFavorite ? " is-fav" : ""}`}
-                style={{ position: "absolute", top: 14, right: 58 }}
-                onClick={() => onToggleFavorite(meal as unknown as MealSummary)}
-                aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}>
-                {isFavorite ? "❤️" : "🤍"}
-              </button>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onAddToShoppingList?.(ingredients, meal.strMeal)}
+                  className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                  title="Add to shopping list"
+                >
+                  <Plus size={20} />
+                </button>
+                <button
+                  onClick={() => onToggleFavorite(summary)}
+                  className={`p-3 rounded-full transition-colors ${isFavorite ? 'bg-red-500' : 'bg-white/20 hover:bg-white/30'}`}
+                >
+                  <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div style={{ padding: "26px 28px 44px", overflowY: "auto", maxHeight: "60vh" }}>
-              <SectionTitle emoji="🥘" title="Ingredients" />
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 30 }}>
-                {ingredients.map(({ ingredient, measure }, i) => (
-                  <div key={i} className="ing-pill">
-                    {measure && <strong style={{ color: "var(--ink)" }}>{measure}</strong>}
-                    <span style={{ color: "var(--muted)" }}>{ingredient}</span>
+        <div className="p-6 space-y-8">
+          <section>
+            <h3 className="font-display text-xl font-bold mb-4 flex items-center gap-2 text-brown dark:text-amber">
+              <ChefHat size={20} />
+              Ingredients
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {ingredients.map(({ ingredient, measure }, i) => (
+                <div key={i} className="ing-pill">
+                  {measure && <strong className="text-ink dark:text-cream">{measure}</strong>}
+                  <span className="text-muted">{ingredient}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {steps.length > 0 && (
+            <section>
+              <h3 className="font-display text-xl font-bold mb-4 text-brown dark:text-amber">Instructions</h3>
+              <div className="space-y-0">
+                {steps.map((step, i) => (
+                  <div key={i} className="recipe-step">
+                    <div className="step-num">{i + 1}</div>
+                    <p className="text-ink dark:text-cream leading-relaxed pt-1">{step}</p>
                   </div>
                 ))}
               </div>
+            </section>
+          )}
 
-              {steps.length > 0 && (
-                <>
-                  <SectionTitle emoji="📋" title="Instructions" />
-                  <div style={{ marginBottom: 30 }}>
-                    {steps.map((step, i) => (
-                      <div key={i} className="recipe-step">
-                        <div className="step-num">{i + 1}</div>
-                        <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--ink)", paddingTop: 3 }}>{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+          {ytId && (
+            <section>
+              <h3 className="font-display text-xl font-bold mb-4 text-brown dark:text-amber">Video Tutorial</h3>
+              <div className="aspect-video rounded-xl overflow-hidden">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${ytId}`}
+                  title={`${meal.strMeal} video`}
+                  allowFullScreen
+                />
+              </div>
+            </section>
+          )}
 
-              {ytId && (
-                <>
-                  <SectionTitle emoji="🎬" title="Watch & Cook" />
-                  <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 24, aspectRatio: "16 / 9" }}>
-                    <iframe width="100%" height="100%"
-                      src={`https://www.youtube.com/embed/${ytId}`}
-                      title={`${meal.strMeal} - cooking video`}
-                      frameBorder="0" allowFullScreen style={{ display: "block" }} />
-                  </div>
-                </>
-              )}
-
-              {meal.strSource && (
-                <a href={meal.strSource} target="_blank" rel="noreferrer noopener"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--amber)", fontSize: 14, textDecoration: "none", fontWeight: 600, borderBottom: "1px solid var(--amber)", paddingBottom: 1 }}>
-                  View full recipe on TheMealDB ↗
-                </a>
-              )}
-            </div>
-          </>
-        )}
+          {meal.strSource && (
+            <a 
+              href={meal.strSource} 
+              target="_blank" 
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 text-amber hover:text-amber-light font-medium transition-colors"
+            >
+              <ExternalLink size={16} />
+              View full recipe on TheMealDB
+            </a>
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-
-function SectionTitle({ emoji, title }: { emoji: string; title: string }) {
-  return (
-    <h3 className="font-display" style={{ fontSize: 19, fontWeight: 700, color: "var(--brown)", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-      <span>{emoji}</span> {title}
-    </h3>
   );
 }
