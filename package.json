@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "set NODE_ENV=development&& tsx server/index.ts",
     "dev:client": "npx vite --port 5173",
-    "build": "tsx script/build.ts",
+    "build": "vite build",
     "start": "set NODE_ENV=production&& node dist/index.cjs",
     "check": "tsc",
     "preview": "vite preview --port 4173"
@@ -15,7 +15,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.60.5",
     "express": "^5.0.1",
-    "lucide-react": "^0.575.0",
+    "lucide-react": "^0.263.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
